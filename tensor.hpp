@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tensor_traits.hpp"
+#include "check.h"
 
 
 namespace tensor {
@@ -56,6 +57,7 @@ private:
   pointer data_;
   bool wrapped_;
 
+public:
   template <int d, typename U>
   struct Initializer_list {
     typedef std::initializer_list<typename Initializer_list<d-1, U>::list_type> list_type;
@@ -83,8 +85,40 @@ private:
 
   typedef typename Initializer_list<k, T>::list_type initializer_type;
 
+public:
   Tensor(initializer_type l) : wrapped_(), data_(nullptr)
   { Initializer_list<k, T>::process(l, *this, 1, 0); }
+
+  Tensor(Tensor&& src) : data_(nullptr), wrapped_() {
+    std::copy_n(src.n_, k, n_);
+    data_ = src.data_;
+    wrapped_ = src.wrapped_;
+    src.data_ = nullptr;
+    src.wrapped_ = false;
+    std::fill_n(src.n_, k, 0);
+  }
+
+  template <int k, typename T>
+  Tensor& operator=(Tensor&& src) {
+    if (this != &src) {
+      if (!wrapped_) delete data_;
+      std::copy_n(src.n_, k, n_);
+      wrapped_ = src.wrapped_;
+      data_ = src.data_;
+      src.data_ = nullptr;
+      src.wrapped_ = false;
+      std::fill_n(src.n_, k, 0);
+    }
+    return *this;
+  }
+
+  template <typename... Args>
+  reference operator()(Args... params) {
+    static_assert(sizeof...(Args) == k, "*** ERROR *** Number of parameters does not match array rank");
+    typedef typename CheckInternal<Args...>::pack_type pack_type;
+    pack_type indices[] = { params... };
+    return data_[index(indices)];
+  }
 
 };
 
