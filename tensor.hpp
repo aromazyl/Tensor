@@ -22,6 +22,8 @@ public:
     init<0>(args...);
   }
 
+  template <int d> void init(Args... args);
+
   template <int d, typename U, typename... Args>
   typename std::enable_if<std::is_integral<U>::value && !std::is_pointer<U>::value && d < k, void>::type
   init(U i, Args&&... type) {
@@ -114,7 +116,7 @@ public:
 
   template <typename... Args>
   reference operator()(Args... params) {
-    static_assert(sizeof...(Args) == k, "*** ERROR *** Number of parameters does not match array rank");
+    static_assert(sizeof...(Args) == k, "*** ERROR *** Number of parameters does not match tensor rank");
     typedef typename CheckInternal<Args...>::pack_type pack_type;
     pack_type indices[] = { params... };
     return data_[index(indices)];

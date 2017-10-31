@@ -20,7 +20,7 @@ struct ReturnType<Expr<BinExprOp<A, B, Op>>> {
 template <typename A, typename B, class Op>
 struct ReturnType<A, Expr<B>, Op> {
   typedef typename ReturnType<typename B::left_type,
-         typename B::right_type, typename B::operator_type>::result_type right_result;
+          typename B::right_type, typename B::operator_type>::result_type right_result;
 
   typedef typename ReturnType<A, right_result, Op>::result_type result_type;
 };
