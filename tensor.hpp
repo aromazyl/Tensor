@@ -16,13 +16,13 @@ public:
   typedef const T& const_reference;
 
 public:
+  template <int d> void init(Args... args);
+
   template <typename... Args>
   Tensor(const Args&... args) : data_(nullptr), wrapped_() {
     static_assert(sizeof...(Args) <= k+1, "*** ERROR *** Wrong number of arguments for array");
     init<0>(args...);
   }
-
-  template <int d> void init(Args... args);
 
   template <int d, typename U, typename... Args>
   typename std::enable_if<std::is_integral<U>::value && !std::is_pointer<U>::value && d < k, void>::type
@@ -67,12 +67,12 @@ public:
       a.n_[k-d] = l.size();
       size_t j = 0;
       for (const auto& r : l)
-        Initalizer_list<d-1, U>::process(r, a, s*l.size(0, idx+s*j++);
+        Initializer_list<d-1, U>::process(r, a, s*l.size(0, idx+s*j++);
     }
   };
 
   template <typename U>
-  struct Initalizer_list<1, U> {
+  struct Initializer_list<1, U> {
     typedef std::initializer_list<U> list_type;
 
     static void process(list_type l, Tensor& a, size_t s, size_t idx) {
