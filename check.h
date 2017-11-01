@@ -8,6 +8,9 @@
 #ifndef CHECK_H
 #define CHECK_H
 
+#include <cuda.h>
+#include <iostream>
+
 namespace tensor {
 template <typename first_type, typename... Rest>
 struct CheckInternal {
@@ -22,6 +25,18 @@ struct CheckInternal<last_type> {
   typedef last_type pack_type;
   enum { value = std::is_integral<last_type>::value };
 };
+
+#define checkCudaErrors(val) check(val, #val, __FILE__, __LINE__)
+
+template <typename T>
+void check(T err, const char* func, char* filename, int line) {
+  if (err != cudaSuccess) {
+    std::cerr << "CUDA error at: " << filename << ":" << line << std::endl;
+    std::cerr << cudaGetErrorString(err) << " " << func << std::endl;
+    exit(1);
+  }
+}
+
 }
 
 #endif /* !CHECK_H */

@@ -54,8 +54,9 @@ public:
     this->fill(fn);
   }
 
-private:
   size_t n_[k] = {0};
+
+private:
   pointer data_;
   bool wrapped_;
 
