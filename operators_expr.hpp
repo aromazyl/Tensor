@@ -1,8 +1,35 @@
 #pragma once
 
+#include <iostream>
+#include <typeinfo>
+#include <utility>
+#include <type_traits>
+
 #include "return_type.hpp"
 
 namespace tensor {
+
+template <typename T>
+struct ExprIdentity {
+  typedef T value_type;
+  typedef T result_type;
+  value_type operator()(T x) const
+  { return x; }
+};
+
+template <typename T>
+struct ExprLiteral {
+  typedef T value_type;
+  ExprLiteral(value_type value) : value_(value) {}
+  template <typename... Args>
+  value_type operator()(Args... params) const {
+    return value_;
+  }
+
+private:
+  value_type value_;
+};
+
 template <class A>
 class Expr {
   A a_;
@@ -13,12 +40,43 @@ public:
   Expr() : a_() {}
   Expr(const A& x) : a_(x) {}
 
+  const A& expr() const { return this->a_; }
+
   auto left() const -> decltype(a_.left()) { return a_.left(); }
   auto right() const -> decltype(a_.right()) { return a_.right(); }
 
   operator result_type() { return a_(); }
   result_type operator()() const { return a_(); }
-  friend inline std::ostream& operator<<(std::ostream& os, const Expr<A>& expr);
+  // friend inline std::ostream& operator<<(std::ostream& os, const Expr<A>& expr);
+};
+
+template <typename T>
+struct ExprTraits;
+
+template <class A>
+struct ExprTraits<Expr<A>> {
+  typedef Expr<A> type;
+};
+
+template <typename T>
+struct ExprTraits<ExprLiteral<T>> {
+  typedef ExprLiteral<T> type;
+};
+
+template <int k, typename T>
+struct Tensor;
+
+template <int k, typename T>
+struct cuTensor;
+
+template <int d, typename T, template <int k, typename T> TensorType>
+struct ExprTraits<TensorType<d, T>> {
+  typedef const TensorType<d, T>& type;
+};
+
+template <>
+struct ExprTraits<EmptyType> {
+  typedef EmptyType type;
 };
 
 template <class A, class B, class Op>
@@ -40,20 +98,47 @@ public:
   { return operator_type::apply(a_, b_); }
 };
 
-template <typename T>
-using SMm = SAm<2, T>;
+template <class A, class B, class Op>
+struct RefBinExprOp {
+  typedef A& reference_type;
+  reference_type a_;
+  B b_;
 
-class ApMul {
-public:
-  template <typename T>
-  static matrix_type<T> apply(const SMn<T>& x, const SMm<T>& y) {
-    const matrix_type<T>& a = x.right();
-    const matrix_type<T>& b = y.right();
-    matrix_type<T> r(a.rows(), b.columns());
-    // TODO {CUDA}
-    return r;
+  typedef reference_type left_type;
+  typedef B right_type;
+  typedef reference_type result_type;
+
+  RefBinExprOp(reference_type a, const B& b)
+    : a_(a), b_(b) {}
+
+  left_type left() const
+  { return a_; }
+  const right_type& right() const
+  { return b_; }
+
+  reference_type operator()() const {
+    return Op::apply(a_, b_);
+  }
+
+  reference_type operator()(double x) const {
+    return Op::apply(a_(x), b_(x));
   }
 };
+
+// template <typename T>
+// using SMm = SAm<2, T>;
+// 
+// class ApMul {
+// public:
+//   template <typename T>
+//   static matrix_type<T> apply(const SMn<T>& x, const SMm<T>& y) {
+//     const matrix_type<T>& a = x.right();
+//     const matrix_type<T>& b = y.right();
+//     matrix_type<T> r(a.rows(), b.columns());
+//     // TODO {CUDA}
+//     return r;
+//   }
+// };
 
 template <class A, class B>
 static typename ReturnType<Expr<A>, Expr<B>, ApMul>::result_type

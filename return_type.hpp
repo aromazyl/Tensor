@@ -7,6 +7,9 @@ struct ReturnType;
 template <class A>
 struct Expr;
 
+template <typename A>
+struct ExprLiteral;
+
 template <typename A, typename B, class Op>
 struct BinExprOp;
 
