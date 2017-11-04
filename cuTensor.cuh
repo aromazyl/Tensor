@@ -6,8 +6,6 @@
 
 namespace tensor {
 
-
-
 // cuda function support implementation
 namespace {
 template <typename A, typename B> struct SameClass {

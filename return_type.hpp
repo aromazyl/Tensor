@@ -1,5 +1,5 @@
 #pragma once
-#include "tensor.hpp"
+
 namespace tensor {
 template <typename... Params>
 struct ReturnType;
@@ -44,19 +44,30 @@ struct ReturnType<Expr<A>, Expr<B>, Op> {
   typedef typename ResultType<left_result, right_type, Op>::result_type result_type;
 };
 
+template <int k, typename T>
+struct Tensor;
+
 template <int d, typename T, class Op>
 struct ReturnType<ExprLiteral<T>, Tensor<d, T>, Op> {
   typedef Tensor<d, T> result_type;
 };
 
-template <typename T>
-struct ReturnType<BinExprOp<Tensor<1, T>, EmptyType, ApTr>, Tensor<1, T>, ApMul> {
-  typedef T result_type;
-};
+// template <typename T>
+// struct ReturnType<BinExprOp<Tensor<1, T>, EmptyType, ApTr>, Tensor<1, T>, ApMul> {
+//   typedef T result_type;
+// };
+// 
+// template <typename T>
+// struct ReturnType<Tensor<Tensor<1, T>, BinExprOp<Tensor<1, T>, EmptyType, ApTr>, ApMul> {
+//   typedef Tensor<2, T> result_type;
+// };
 
-template <typename T>
-struct ReturnType<Tensor<Tensor<1, T>, BinExprOp<Tensor<1, T>, EmptyType, ApTr>, ApMul> {
-  typedef Tensor<2, T> result_type;
+template <int k, typename T>
+struct cuTensor;
+
+template <int d, typename T, class Op>
+struct ReturnType<ExprLiteral<T>, cuTensor<d, T>, Op> {
+  typedef cuTensor<d, T> result_type;
 };
 
 }

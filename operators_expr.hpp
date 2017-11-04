@@ -125,45 +125,30 @@ struct RefBinExprOp {
   }
 };
 
-// template <typename T>
-// using SMm = SAm<2, T>;
-// 
-// class ApMul {
-// public:
-//   template <typename T>
-//   static matrix_type<T> apply(const SMn<T>& x, const SMm<T>& y) {
-//     const matrix_type<T>& a = x.right();
-//     const matrix_type<T>& b = y.right();
-//     matrix_type<T> r(a.rows(), b.columns());
-//     // TODO {CUDA}
-//     return r;
-//   }
-// };
-
 template <class A, class B>
 static typename ReturnType<Expr<A>, Expr<B>, ApMul>::result_type
 apply(const Expr<A>& a, const Expr<B>& b)
 { return a() * b(); }
 
-template <class A, class B>
-typename enable_if<!is_arithmetic<A>::value && !is_arithmetic<B>::value, A&>::type
-operator+=(A& a, const B& b) {
-  typedef RefBinExpr<A, B, ApAdd> ExprT;
-  return Expr<ExprT>(ExprT(a, b))();
-};
-
-template <typename T>
-using SMmSMmm = Expr<BinExprOp<SMm<T>, SMm<T>, ApMul>>;
-
-class ApAdd {
-public:
-  template <typename T>
-  static matrix_type<T>& apply(matrix_type<T>& c, const SMmSMmm<T>& y) {
-    const matrix_type<T>& a = y.left().right();
-    const matrix_type<T>& b = y.right().right();
-    // TODO {CUDA}
-    return c;
-  }
-};
+// template <class A, class B>
+// typename enable_if<!is_arithmetic<A>::value && !is_arithmetic<B>::value, A&>::type
+// operator+=(A& a, const B& b) {
+//   typedef RefBinExpr<A, B, ApAdd> ExprT;
+//   return Expr<ExprT>(ExprT(a, b))();
+// };
+// 
+// template <typename T>
+// using SMmSMmm = Expr<BinExprOp<SMm<T>, SMm<T>, ApMul>>;
+// 
+// class ApAdd {
+// public:
+//   template <typename T>
+//   static matrix_type<T>& apply(matrix_type<T>& c, const SMmSMmm<T>& y) {
+//     const matrix_type<T>& a = y.left().right();
+//     const matrix_type<T>& b = y.right().right();
+//     // TODO {CUDA}
+//     return c;
+//   }
+// };
 
 }
